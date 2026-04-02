@@ -61,3 +61,7 @@ SELECT generate_series(
     MAX(login_date),
     INTERVAL '1 day'
 )
+
+-- DATE MANIPULATION
+
+TO_CHAR(trans_date, 'YYYY-MM') AS month
