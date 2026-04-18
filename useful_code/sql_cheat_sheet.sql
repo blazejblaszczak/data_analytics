@@ -88,6 +88,94 @@ NTILE(4) OVER (
 ) AS quartile
 -- Split into buckets (quartiles, deciles)
 
+
+-- ##### PERCENTILE FUNCTIONS #####
+  -- Used for median, p90, p95, distribution analysis
+
+-- PERCENTILE_CONT()
+SELECT
+PERCENTILE_CONT(0.5)
+WITHIN GROUP (ORDER BY amount) AS median_amount
+FROM transactions;
+-- Continuous percentile (interpolated value)
+
+-- PERCENTILE_DISC()
+SELECT
+PERCENTILE_DISC(0.5)
+WITHIN GROUP (ORDER BY amount)
+FROM transactions;
+
+PERCENTILE_CONT(0.5)
+WITHIN GROUP (ORDER BY amount)
+OVER (PARTITION BY country)
+-- Returns actual existing value from dataset
+
+
+-- ##### ARRAY / STRING Aggregations #####
+
+-- ARRAY_AGG()
+SELECT user_id,
+ARRAY_AGG(amount ORDER BY txn_date) AS payments
+FROM transactions
+GROUP BY user_id;
+-- Collect rows into array
+
+-- STRING_AGG()
+SELECT user_id,
+STRING_AGG(merchant, ', ')
+FROM transactions
+GROUP BY user_id;
+-- Concatenate strings
+
+-- JSON_AGG()
+SELECT user_id,
+JSON_AGG(merchant)
+FROM transactions
+GROUP BY user_id;
+
+
+-- ##### STRING MANIPULATION #####
+
+-- CONCAT()
+CONCAT(first_name, ' ', last_name)
+
+-- LOWER() / UPPER()
+
+-- TRIM()
+-- Removes spaces
+TRIM(name)
+LTRIM(name)
+RTRIM(name)
+
+-- LENGTH()
+
+-- SUBSTRING()
+SUBSTRING(email FROM POSITION('@' IN email)+1)
+-- Extract domain
+
+-- LEFT() / RIGHT()
+
+-- REPLACE()
+REPLACE(phone,'-','')
+
+-- POSITION()
+POSITION('@' IN email)
+
+-- SPLIT_PART()
+SPLIT_PART(email,'@',2)
+
+-- REGEXP_REPLACE()
+REGEXP_REPLACE(phone,'[^0-9]','','g')
+
+-- INITCAP()
+INITCAP(name)
+-- john smith → John Smith
+
+-- COALESCE()
+-- Null handling
+
+
+
 -- Rolling windows
 
 SELECT
