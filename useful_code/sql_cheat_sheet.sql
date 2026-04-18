@@ -13,8 +13,9 @@ SELECT
 FROM transactions
 GROUP BY user_id;
 
--- Window functions
+-- ##### WINDOW FUNCTIONS #####
 
+-- ROW_NUMBER
 SELECT *
 FROM (
   SELECT *,
@@ -23,16 +24,69 @@ FROM (
 ) t
 WHERE rn = 1;
 
--- RANK() OVER (ORDER BY total_spend DESC) - ranking
--- SUM(amount) OVER (PARTITION BY user_id ORDER BY date) - running total
+-- RANK
+SELECT *,
+RANK() OVER (
+    ORDER BY amount DESC
+) AS rnk
+FROM transactions;
+-- If amounts = 100,100,80 → ranks = 1,1,3
 
--- Lag/Lead
+-- DENSE_RANK
+DENSE_RANK() OVER (ORDER BY amount DESC)
+-- Same rank for ties, no gaps. 100,100,80 → 1,1,2
 
+-- SUM() OVER()
+SELECT *,
+SUM(amount) OVER (
+    PARTITION BY user_id
+    ORDER BY txn_date
+) AS running_total
+FROM transactions;
+-- Running totals or grouped totals without collapsing rows
+
+-- AVG() OVER()
+SELECT *,
+AVG(amount) OVER (
+    PARTITION BY user_id
+) AS avg_user_spend
+FROM transactions;
+-- Average by group while keeping rows
+
+-- COUNT() OVER()
+SELECT *,
+COUNT(*) OVER (
+    PARTITION BY user_id
+) AS txn_count
+FROM transactions;
+-- Count rows in partition
+
+-- MIN() / MAX() OVER()
+MIN(txn_date) OVER (
+    PARTITION BY user_id
+) AS first_txn
+-- Earliest / latest value without GROUP BY.
+
+--LAG
 SELECT 
   user_id,
   amount,
   LAG(amount) OVER (PARTITION BY user_id ORDER BY date) AS prev_amount
 FROM transactions;
+-- Previous row value
+
+-- LEAD
+LEAD(txn_date) OVER (
+    PARTITION BY user_id
+    ORDER BY txn_date
+) AS next_txn
+-- Next row value
+
+-- NTILE(n)
+NTILE(4) OVER (
+    ORDER BY amount DESC
+) AS quartile
+-- Split into buckets (quartiles, deciles)
 
 -- Rolling windows
 
