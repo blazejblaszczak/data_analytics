@@ -23,6 +23,7 @@ FROM (
   FROM transactions
 ) t
 WHERE rn = 1;
+-- Gives every row a unique sequential number.
 
 -- RANK
 SELECT *,
@@ -30,6 +31,7 @@ RANK() OVER (
     ORDER BY amount DESC
 ) AS rnk
 FROM transactions;
+-- Rows with the same value receive the same rank, and the next rank skips numbers
 -- If amounts = 100,100,80 → ranks = 1,1,3
 
 -- DENSE_RANK
@@ -97,6 +99,10 @@ SELECT
 PERCENTILE_CONT(0.5)
 WITHIN GROUP (ORDER BY amount) AS median_amount
 FROM transactions;
+
+PERCENTILE_CONT(0.5)
+WITHIN GROUP (ORDER BY amount)
+OVER (PARTITION BY country)
 -- Continuous percentile (interpolated value)
 
 -- PERCENTILE_DISC()
@@ -104,10 +110,6 @@ SELECT
 PERCENTILE_DISC(0.5)
 WITHIN GROUP (ORDER BY amount)
 FROM transactions;
-
-PERCENTILE_CONT(0.5)
-WITHIN GROUP (ORDER BY amount)
-OVER (PARTITION BY country)
 -- Returns actual existing value from dataset
 
 
