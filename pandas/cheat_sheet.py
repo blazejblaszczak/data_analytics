@@ -26,6 +26,11 @@ df.info()
 df.describe()
 df.describe(include="object")
 
+# value counts / unique
+df["country"].value_counts()
+df["country"].nunique()
+df["country"].unique()
+
 # NULL HANDLING
 # count nulls
 df.isna().sum()
@@ -55,6 +60,7 @@ df.sort_values(["country", "amount"])
 df.rename(columns={"amt": "amount"})
 df["amount_eur"] = df["amount"] * 0.93
 df["high_value"] = np.where(df["amount"] > 1000, 1, 0) # conditional column
+df["flag"] = df["amount"].apply(lambda x: "high" if x > 100 else "low") # lambda function
 
 # AGGREGATIONS
 df.groupby("country")["amount"].sum()
@@ -72,3 +78,37 @@ df.groupby("country").agg(
 df1.merge(df2, on="user_id", how="inner")
 df1.merge(df2, left_on="id", right_on="user_id")
 
+# STRING FUNCTIONS
+df["email"].str.lower()
+df["country"].str.upper()
+df["name"].str.strip()
+df[df["email"].str.contains("@gmail.com", na=False)]
+df["phone"].str.replace("-", "", regex=False)
+df["email"].str.split("@").str[1]
+df["phone"].str.len()
+
+# DATE FUNCTIONS
+df["date"] = pd.to_datetime(df["date"])
+df["refreshed_at"] = datetime.now(timezone.utc)
+# extract parts
+df["year"] = df["date"].dt.year
+df["month"] = df["date"].dt.month
+df["day"] = df["date"].dt.day
+df["weekday"] = df["date"].dt.day_name()
+df["days_since"] = (pd.Timestamp.today() - df["date"]).dt.days # date diff
+df["month_start"] = df["date"].dt.to_period("M") # floot to month
+
+# WINDOW-LIKE OPERATIONS
+df["running_total"] = df["amount"].cumsum() # cumulative sum
+df["rank"] = df["amount"].rank(ascending=False) # rank
+df["prev_amount"] = df["amount"].shift(1) # lag
+df["prev_amt"] = df.groupby("user_id")["amount"].shift(1) # group lag
+
+# PIVOT TABLE
+pd.pivot_table(
+    df,
+    values="amount",
+    index="country",
+    columns="plan",
+    aggfunc="sum"
+)
