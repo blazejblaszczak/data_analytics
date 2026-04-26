@@ -63,7 +63,7 @@ df["high_value"] = np.where(df["amount"] > 1000, 1, 0) # conditional column
 df["flag"] = df["amount"].apply(lambda x: "high" if x > 100 else "low") # lambda function
 
 # AGGREGATIONS
-df.groupby("country")["amount"].sum()
+df.groupby(["user_id", "country"])["amount"].sum()
 df.groupby("country").agg({
     "amount": ["sum", "mean", "count"],
     "user_id": "nunique"
@@ -103,6 +103,8 @@ df["running_total"] = df["amount"].cumsum() # cumulative sum
 df["rank"] = df["amount"].rank(ascending=False) # rank
 df["prev_amount"] = df["amount"].shift(1) # lag
 df["prev_amt"] = df.groupby("user_id")["amount"].shift(1) # group lag
+prize_per_year = df_data.groupby(by='year').count().prize
+moving_average = prize_per_year.rolling(window=5).mean() # rolling window
 
 # PIVOT TABLE
 pd.pivot_table(
@@ -111,4 +113,42 @@ pd.pivot_table(
     index="country",
     columns="plan",
     aggfunc="sum"
+)
+
+# STACK
+stack = df_apps_clean["Genres"].str.split(';', expand=True).stack() # stack the prescribed level(s) from columns to index
+
+# READ DATA EXTRA
+# CSV
+df = pd.read_csv(
+    "data.csv",
+    sep=",",              # delimiter (default)
+    header=0,             # row with column names
+    na_values=["NA", ""], # treat as NaN
+    parse_dates=["date"], # auto-convert to datetime
+    encoding="utf-8"
+)
+# JSON
+df = pd.read_json("data.json")
+# Nested JSON
+from pandas import json_normalize
+import json
+
+with open("data.json") as f:
+    data = json.load(f)
+
+df = json_normalize(data)
+# JSON lines
+df = pd.read_json("data.json", lines=True)
+
+# TXT on positions
+df = pd.read_fwf(
+    "data.txt",
+    colspecs=[(0, 3), (3, 12), (12, 16)], # on position
+    names=["id", "name", "year"]
+)
+df = pd.read_fwf(
+    "data.txt",
+    widths=[3, 9, 4], # on widths
+    names=["id", "name", "year"]
 )
