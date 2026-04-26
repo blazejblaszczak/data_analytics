@@ -90,6 +90,7 @@ df["phone"].str.len()
 # DATE FUNCTIONS
 df["date"] = pd.to_datetime(df["date"])
 df["refreshed_at"] = datetime.now(timezone.utc)
+df["date_text"] = pd.to_datetime(df["date_"]).dt.strftime('%d/%m/%Y')
 # extract parts
 df["year"] = df["date"].dt.year
 df["month"] = df["date"].dt.month
