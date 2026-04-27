@@ -97,6 +97,9 @@ df["month"] = df["date"].dt.month
 df["day"] = df["date"].dt.day
 df["weekday"] = df["date"].dt.day_name()
 df["days_since"] = (pd.Timestamp.today() - df["date"]).dt.days # date diff
+df["minutes_diff"] = (
+    df["end_time"] - df["start_time"]
+).dt.total_seconds() / 60 # minute diff
 df["month_start"] = df["date"].dt.to_period("M") # floot to month
 
 # WINDOW-LIKE OPERATIONS
