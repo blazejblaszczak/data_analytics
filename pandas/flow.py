@@ -49,12 +49,32 @@ df["segment"] = np.select(
     ],
     default="Low"
 )
+df["segment"] = "Low"
+df.loc[df["amount"] >= 100, "segment"] = "Medium"
+df.loc[df["amount"] >= 200, "segment"] = "High"
 # running total amount
 df["running_total"] = df["amount"].fillna(0).cumsum()
+# rolling average
+df["rolling_avg_3"] = (
+    df["amount"]
+      .rolling(window=3)
+      .mean()
+)
+df["rolling_avg"] = (
+    df.groupby("user_id")["amount"]
+      .rolling(3)
+      .mean()
+      .reset_index(level=0, drop=True)
+)
 # days since signup
 df["days_since_signup"] = (
     pd.Timestamp.today() - df["signup_date"]
 ).dt.days
+# rank higherst amount per country
+df["rank_in_country"] = (
+    df.groupby("country")["amount"]
+      .rank(method="dense", ascending=False)
+)
 
 ### 5. Merging dataframes
 plans = pd.DataFrame({
@@ -71,3 +91,21 @@ pd.pivot_table(
     index="country",
     aggfunc="count"
 )
+
+### 7.Example on time difference between two timestamps
+df["start_time"] = pd.to_datetime([
+    "2024-01-01 10:00",
+    "2024-01-01 11:30"
+])
+
+df["end_time"] = pd.to_datetime([
+    "2024-01-01 10:25",
+    "2024-01-01 12:10"
+])
+
+df["minutes_diff"] = (
+    df["end_time"] - df["start_time"]
+).dt.total_seconds() / 60
+
+### 8. Potential forward fill
+df["amount"] = df["amount"].fillna(method="ffill")
