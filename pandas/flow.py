@@ -17,11 +17,16 @@ df["signup_date"] = pd.to_datetime(df["signup_date"])
 df.info()
 df.isna().sum()
 df.duplicated().sum()
+# detect outliers
+threshold = df["amount"].quantile(0.95)
+df["outlier"] = df["amount"] > threshold
 
-### 2. Fill missing values
+### 2. Fill missing values + normalization
 # Replace missing amount with median and missing country with "Unknown"
 df["amount"] = df["amount"].fillna(df["amount"].median())
 df["country"] = df["country"].fillna("Unknown")
+# Normalize text values
+df["country"] = df["country"].str.strip().str.lower()
 
 ### 3. Grouping
 # Calculate total/average amount by country.
@@ -31,3 +36,38 @@ df.groupby("country")["amount"].mean().reset_index()
 df["month"] = df["signup_date"].dt.to_period("M")
 df.groupby("month")["user_id"].count().reset_index()
 
+### 4. Creating columns
+# segment column on condition
+df["segment"] = np.select(
+    [
+        df["amount"] >= 200,
+        df["amount"] >= 100
+    ],
+    [
+        "High",
+        "Medium"
+    ],
+    default="Low"
+)
+# running total amount
+df["running_total"] = df["amount"].fillna(0).cumsum()
+# days since signup
+df["days_since_signup"] = (
+    pd.Timestamp.today() - df["signup_date"]
+).dt.days
+
+### 5. Merging dataframes
+plans = pd.DataFrame({
+    "user_id": [1,2,3,4,5],
+    "plan": ["Free","Premium","Free","Metal","Free"]
+})
+df.merge(plans, on="user_id", how="left")
+
+### 6. Pivot for additional dataframe
+# Users per country pivot
+pd.pivot_table(
+    df,
+    values="user_id",
+    index="country",
+    aggfunc="count"
+)
